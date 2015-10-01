@@ -38,7 +38,9 @@ A Build Phase is Made Up of Plugin Goals. A plugin goal represents a specific ta
 
 A plugin contains Goals. Plugins are make up of mojos(Maven plain Old Java Object). Each mojo is an executable goal in Maven
 
-to execute a goal, run **mvn** follow by pluginName:goalName.
+to execute a goal, run command **mvn** follow by pluginName:goalName.
+
+Example: **mvn source:jar**  - bundle all source code in a jar file under Target directory, need to add maven source plugin to pom.xml for this goal to run.
 
 ### Useful links
 
