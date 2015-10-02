@@ -42,6 +42,11 @@ to execute a goal, run command **mvn** follow by pluginName:goalName.
 
 Example: **mvn source:jar**  - bundle all source code in a jar file under Target directory, need to add maven source plugin to pom.xml for this goal to run.
 
+Maven provides some standard plugins, when using the standard plugins, you don't need to provide the groupId *org.apache.maven.plugins* or version. Example **maven-assembly-plugin**
+see [Maven Supported Plugins](http://maven.apache.org/plugins/index.html)
+
+to configure a plugin see [Guide to Configuring Plug-ins](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
+
 ### Useful links
 
 [Apache Maven Home](https://maven.apache.org/index.html)
