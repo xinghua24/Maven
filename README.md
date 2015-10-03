@@ -25,13 +25,19 @@ default lifecycle phases
 * deploy
 
 clean lifecycle phase
+* pre-clean
 * clean
+* post-clean
 
 site lifecycle phase
+* pre-site
 * site
+* post-site
+* site-deploy
 
-if you call a build phase, it will execute all the phases prior to the called build phase and also the called build phase
-**mvn install** will execute all phases in defaul lifecycle except deploy phase
+if you call a build phase, it will execute all the phases prior to the called build phase and also the called build phase. For Example **mvn install** will execute all phases in defaul lifecycle except deploy phase.
+
+You can not execute a lifecycle directly, you can only execute a phase or a plugin. So when you execute command **mvn clean**, the pre-client and clean phase are actually called, not the lifecycle.
 
 ### Plugin and Goal
 A Build Phase is Made Up of Plugin Goals. A plugin goal represents a specific task. A build phase without any goals will not be executed. 
