@@ -57,18 +57,16 @@ complete list see [Default Lifecycle Reference](https://maven.apache.org/guides/
 * post-site
 * site-deploy
 
-**default lifecycle's bindings**<br>
-| Default Lifecycle Phrase | Plugin Binding                               |
-|--------------------------|----------------------------------------------|
-| generate-resources       | plugin:descriptor                            |
-| process-resources        | resources:resources                          |
-| compile                  | compiler:compile                             |
-| process-test-resources   | resources:testResources                      |
-| test-compile             | compiler:testCompile                         |
-| test                     | surefire:test                                |
-| package                  | jar:jar and plugin:addPluginArtifactMetadata |
-| install                  | install:install                              |
-| deploy                   | deploy:deploy                                |
+**default lifecycle phase's bindings**<br>
+* generate-resources         -->    plugin:descriptor                            
+* process-resources          -->    resources:resources                          
+* compile                    -->    compiler:compile                             
+* process-test-resources     -->    resources:testResources                      
+* test-compile               -->    compiler:testCompile                         
+* test                       -->    surefire:test                                
+* package                    -->    jar:jar and plugin:addPluginArtifactMetadata 
+* install                    -->    install:install                              
+* deploy                     -->    deploy:deploy                                
 
 
 
