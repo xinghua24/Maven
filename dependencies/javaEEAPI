@@ -1,8 +1,0 @@
-		<!-- contains the entire jee api -->
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>6.0</version>
-			<!-- scope provided means the container delivers it -->
-			<scope>provided</scope>
-		</dependency>

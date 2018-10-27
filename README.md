@@ -3,11 +3,20 @@
 - [Maven Core Concept](#maven-core-concept)
     - [LifeCycle](#lifecycle)
     - [Plugin and Goal](#plugin-and-goal)
+    - [Properties](#properties)
+        - [Maven Project Properties](#maven-project-properties)
+        - [Maven Settings Properties](#maven-settings-properties)
+        - [Environment Variable Properties](#environment-variable-properties)
 - [Useful Commands](#useful-commands)
 - [Core Maven Plugins](#core-maven-plugins)
     - [Clean Plugin](#clean-plugin)
     - [Resources Plugin](#resources-plugin)
+    - [Compiler Plugin](#compiler-plugin)
     - [Surefire Plugin](#surefire-plugin)
+    - [Deploy Plugin](#deploy-plugin)
+    - [Maven Dependency Plugin](#maven-dependency-plugin)
+    - [Maven Jar Plugin](#maven-jar-plugin)
+    - [Assembly Plugin](#assembly-plugin)
 - [Useful links](#useful-links)
 
 <!-- /TOC -->
@@ -84,7 +93,41 @@ see [Maven Supported Plugins](http://maven.apache.org/plugins/index.html)
 
 to configure a plugin see [Guide to Configuring Plug-ins](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
 
+
+## Properties
+For more info on Properties see [Maven: The Complete Reference - Maven Properties](https://books.sonatype.com/mvnref-book/reference/resource-filtering-sect-properties.html)'
+You can use Maven properties in a pom.xml file or in any resource that is being processed by the Maven Resource plugin’s filtering features. A property is always surrounded by ${ and }. e.g ${project.groupId}
+
+Maven project has implicit properties, you can also have user-defined properties.
+
+
+### Maven Project Properties
+use project.* to reference values in a Maven Pom. e.g ${project.groupId}, ${project.version}, ${project.build.sourceDirectory}
+
+* ${project.basedir} - The directory that the current project resides in
+* ${project.build.sourceDirectory} - ${project.basedir}/src/main/java
+* ${project.build.directory} - ${project.basedir}/target
+
+see suport POM for the list of pre-defined variable. [pom](https://github.com/apache/maven/blob/trunk/maven-model-builder/src/main/resources/org/apache/maven/model/pom-4.0.0.xml#L53)
+
+
+### Maven Settings Properties
+You can also reference any properties in the Maven Local Settings file which is usually stored in ~/.m2/settings.xml. prefix is settings.*
+
+
+### Environment Variable Properties
+Environment variables can be referenced with the env.* prefix.
+
+
 # Useful Commands
+
+to generate a maven quick start project
+```sh
+mvn archetype:generate -DgroupId={project-packaging} -DartifactId={project-name} -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+# example
+mvn archetype:generate -DgroupId=com.xinghua24 -DartifactId=HelloProject -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+```
 
 if you call a build phase, it will execute all the phases prior to the called build phase and also the called build phase. 
 For Example **mvn install** will execute all phases in defaul lifecycle except deploy phase.
@@ -123,14 +166,27 @@ mvn dependency:resolve -Dclassifier=javadoc
 ```
 
 # Core Maven Plugins
-* [Baeldung maven plugins](https://www.baeldung.com/core-maven-plugins)
-    * [Resource plugin](https://www.baeldung.com/maven-resources-plugin)
-    * [Surefire plugin](https://www.baeldung.com/maven-surefire-plugin)
+
 
 ## Clean Plugin
 [Clean plugin Homepage](https://maven.apache.org/plugins/maven-clean-plugin/)
 
 The Maven Clean Plugin will delete the target directory by default. 
+
+you can also delete additional directories
+```xml
+<plugin>
+	<artifactId>maven-clean-plugin</artifactId>
+	<version>3.0.0</version>
+	<configuration>
+		<filesets>
+			<fileset>
+				<directory>${basedir}/output-resources</directory>
+			</fileset>
+		</filesets>
+	</configuration>
+</plugin>
+```
 
 
 ## Resources Plugin
@@ -202,6 +258,36 @@ You can use resources plugin's copy-resources goal to move resource to an arbitr
 </plugin>
 ```
 
+
+## Compiler Plugin
+[Maven Compiler plugin Homepage](https://maven.apache.org/plugins/maven-compiler-plugin/)
+
+two goals
+* compiler:compile is bound to the compile phase and is used to compile the main source files.
+* compiler:testCompile is bound to the test-compile phase and is used to compile the test source files.
+
+if you want the compiler to use java 8 feature and compile to JVM 1.8, set the source and target parameters.
+```xml
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+```
+
+
+
 ## Surefire Plugin
 [Maven Surefire Plugin Homepage](https://maven.apache.org/surefire/maven-surefire-plugin/)
 
@@ -214,8 +300,50 @@ Plain text files (*.txt)
 By default, these files are generated in ${basedir}/target/surefire-reports/TEST-*.xml.
 
 
+
+## Deploy Plugin
+[Deploy Plugin Homepage](https://maven.apache.org/plugins/maven-deploy-plugin/)
+
+The deploy plugin is primarily used during the deploy phase, to add your artifact(s) to a remote repository for sharing with other developers and projects.
+
+
+Two goals
+* deploy:deploy is used to automatically install the artifact, its pom and the attached artifacts produced by a particular project. Most if not all of the information related to the deployment is stored in the project's pom.
+* deploy:deploy-file is used to install a single artifact along with its pom. In that case the artifact information can be taken from an optionally specified pomFile, but can be completed/overriden using the command line.
+
+## Maven Dependency Plugin
+[Maven Dependency Plugin Homepage](https://maven.apache.org/plugins/maven-dependency-plugin/)
+
+The dependency plugin provides the capability to manipulate artifacts. It can copy and/or unpack artifacts from local or remote repositories to a specified location.
+
+
+## Maven Jar Plugin
+[Maven Jar Plugin Homepage](https://maven.apache.org/plugins/maven-jar-plugin/)
+
+This plugin provides the capability to build jars. If you like to sign jars please use the Maven Jarsigner Plugin.
+
+goals
+* jar:jar create a jar file for your project classes inclusive resources.
+* jar:test-jar create a jar file for your project test classes .
+
+
+## Assembly Plugin
+[Maven Assembly Plugin Homepage](https://maven.apache.org/plugins/maven-assembly-plugin/)
+
+it can be used to create distributions. it supports a lot of formats such as zip, tar.gz, jar etc.
+
+**What is Assembly?**<br>
+An "assembly" is a group of files, directories, and dependencies that are assembled into an archive format and distributed.
+
+The main goal in the assembly plugin is the single goal. It is used to create all assemblies.
+
+see [example](https://stackoverflow.com/questions/2514429/creating-a-zip-archive-of-the-maven-target-directory)
+on how to create zip
+
+
 # Useful links
 * [Apache Maven Home](https://maven.apache.org/index.html)
+* [Book Maven: The Complete Reference](https://books.sonatype.com/mvnref-book/reference/index.html)
 * [Apache Maven Guide](https://maven.apache.org/guides/getting-started/index.html)
     * [Intro to Build Lifecycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
     * [Config plugin](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
@@ -223,3 +351,6 @@ By default, these files are generated in ${basedir}/target/surefire-reports/TEST
 * [Mkyong Maven Tutorial](http://www.mkyong.com/tutorials/maven-tutorials/)
 * [Tutorialspoint Maven Tutorial](http://www.tutorialspoint.com/maven/)
 * [Maven by Example](https://books.sonatype.com/mvnex-book/reference/index.html)
+* [Baeldung maven plugins](https://www.baeldung.com/core-maven-plugins)
+
+
