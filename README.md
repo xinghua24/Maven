@@ -17,6 +17,7 @@
     - [Maven Dependency Plugin](#maven-dependency-plugin)
     - [Maven Jar Plugin](#maven-jar-plugin)
     - [Assembly Plugin](#assembly-plugin)
+- [Nexus](#nexus)
 - [Useful links](#useful-links)
 
 <!-- /TOC -->
@@ -340,6 +341,105 @@ The main goal in the assembly plugin is the single goal. It is used to create al
 see [example](https://stackoverflow.com/questions/2514429/creating-a-zip-archive-of-the-maven-target-directory)
 on how to create zip
 
+
+# Nexus
+Repository Manager is The warehouse for software parts.
+
+Benefits
+* Enable greater collaboration between developers.
+* Bring increased build performance due to a wider distribution of software and locally available parts.
+* Reduce network bandwidth and dependency on remote repositories.
+* Insulate your company from outages in the internet, outages of public repositories (Maven Central, npm, etc.), or even removal of an open source component. 
+
+
+To rnn nexus3 as docker container
+```sh
+docker run -d -p 8081:8081 --name nexus sonatype/nexus3
+```
+
+To test
+```sh
+curl -u admin:admin123 http://localhost:8081/service/metrics/ping
+```
+
+Nexus URL is [http://localhost:8081](http://localhost:8081). Default credentials are: admin / admin123.
+
+
+`Component` is Any resource produced or used by your software application like packages, libraries, binaries, or containers.
+ Typically components are archive files.
+
+
+A `repository format` is a communication protocol for storing, retrieving, and indexing components and the metadata about those components.
+examples are Maven2, Docker, NuGet, npm etc...
+
+
+Repository Types
+* A `proxy repository` is a repository that is linked to a remote repository, such as the Central Repository.
+* A `hosted repository` is a repository that stores components in the repository manager as the authoritative location for these components. 
+* A `repository group`  is a collection of other repositories, where you can combine multiple repositories of the same format into a single item. 
+
+
+Out-of-the-box Nexus contains the following repositories
+* proxy for Maven Central Repository
+* maven-snapshots - repository to host multiple versions of a project in development
+* maven-releases - repository to host stable project for prod
+
+
+Configure ~/.m2/settings.xml. This allows maven project to deploy to nexus repository and download repository
+from maven central through nexus.
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+
+  <servers>
+    <server>
+      <id>nexus-snapshots</id>
+      <username>admin</username>
+      <password>admin123</password>
+    </server>
+    <server>
+      <id>nexus-releases</id>
+      <username>admin</username>
+      <password>admin123</password>
+    </server>
+  </servers>
+
+  <mirrors>
+    <mirror>
+      <id>central</id>
+      <name>central</name>
+      <url>http://localhost:8081/repository/maven-central/</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors>
+
+</settings>
+```
+
+To deploy snapshot or release artifact to local Nexus to host. Add the following snippe to pom.xml. to allow
+maven to deploy to nexus. use `mvn deploy` command to do the deployment.
+```xml
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>maven-snapshots</name>
+			<url>http://localhost:8081/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>nexus</id>
+			<name>maven-releases</name>
+			<url>http://localhost:8081/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
+```
+
+
+
+Reference
+* [Docker  repository for nexus3](https://hub.docker.com/r/sonatype/nexus3/)
+* [Sonatype Learning - for basics and first time setup](https://help.sonatype.com/learning/repository-manager-3)
 
 # Useful links
 * [Apache Maven Home](https://maven.apache.org/index.html)
