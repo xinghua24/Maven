@@ -1,7 +1,7 @@
 <!-- TOC -->
 
 - [Maven Core Concept](#maven-core-concept)
-    - [LifeCycle](#lifecycle)
+    - [LifeCycle and Phrase](#lifecycle-and-phrase)
     - [Plugin and Goal](#plugin-and-goal)
     - [Properties](#properties)
         - [Maven Project Properties](#maven-project-properties)
@@ -17,6 +17,7 @@
     - [Maven Dependency Plugin](#maven-dependency-plugin)
     - [Maven Jar Plugin](#maven-jar-plugin)
     - [Assembly Plugin](#assembly-plugin)
+    - [Shade Plugin](#shade-plugin)
 - [Nexus](#nexus)
 - [Useful links](#useful-links)
 
@@ -26,12 +27,8 @@
 
 Maven is a project management tool base on Project Object Model(POM)
 
-This project contains useful snippets and reference for working with Maven. 
 
-* A **lifecycle** is make up of **phrases**.
-
-
-## LifeCycle
+## LifeCycle and Phrase
 [Intro to LifeCycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
 
 There are three build-in build lifecycles
@@ -96,7 +93,8 @@ to configure a plugin see [Guide to Configuring Plug-ins](https://maven.apache.o
 
 
 ## Properties
-For more info on Properties see [Maven: The Complete Reference - Maven Properties](https://books.sonatype.com/mvnref-book/reference/resource-filtering-sect-properties.html)'
+For more info on Properties see [Maven: The Complete Reference - Maven Properties](https://books.sonatype.com/mvnref-book/reference/resource-filtering-sect-properties.html)
+
 You can use Maven properties in a pom.xml file or in any resource that is being processed by the Maven Resource plugin’s filtering features. A property is always surrounded by ${ and }. e.g ${project.groupId}
 
 Maven project has implicit properties, you can also have user-defined properties.
@@ -109,8 +107,7 @@ use project.* to reference values in a Maven Pom. e.g ${project.groupId}, ${proj
 * ${project.build.sourceDirectory} - ${project.basedir}/src/main/java
 * ${project.build.directory} - ${project.basedir}/target
 
-see suport POM for the list of pre-defined variable. [pom](https://github.com/apache/maven/blob/trunk/maven-model-builder/src/main/resources/org/apache/maven/model/pom-4.0.0.xml#L53)
-
+see suport POM for the list of pre-defined properties. [pom](https://github.com/apache/maven/blob/trunk/maven-model-builder/src/main/resources/org/apache/maven/model/pom-4.0.0.xml#L53)
 
 ### Maven Settings Properties
 You can also reference any properties in the Maven Local Settings file which is usually stored in ~/.m2/settings.xml. prefix is settings.*
@@ -121,7 +118,6 @@ Environment variables can be referenced with the env.* prefix.
 
 
 # Useful Commands
-
 to generate a maven quick start project
 ```sh
 mvn archetype:generate -DgroupId={project-packaging} -DartifactId={project-name} -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
@@ -143,6 +139,9 @@ mvn clean compile
 mvn clean test
 
 mvn package
+
+# to skip test
+mvn package -DskipTests
 
 # install project in local repo
 mvn clean install
@@ -166,9 +165,8 @@ mvn dependency:sources
 mvn dependency:resolve -Dclassifier=javadoc
 ```
 
+
 # Core Maven Plugins
-
-
 ## Clean Plugin
 [Clean plugin Homepage](https://maven.apache.org/plugins/maven-clean-plugin/)
 
@@ -196,7 +194,6 @@ you can also delete additional directories
 The Resources Plugin handles the copying of project resources to the output directory. There are two different kinds of resources:
  main resources and test resources. The difference is that the main resources are the resources associated to the main source code 
  while the test resources are associated to the test source code.
-
 
 
 There are 3 goals for this plugin
@@ -230,6 +227,16 @@ Same for target/test-classes.
 		</testResources>
         <!-- other configs -->
 	</build>
+```
+
+**filtering**<br>
+if filtering is set to true, variables defined in ${...} format will be replace with property value. 
+see [documentation](https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html)
+```xml
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
 ```
 
 You can use resources plugin's copy-resources goal to move resource to an arbitrary directory
@@ -333,13 +340,111 @@ goals
 
 it can be used to create distributions. it supports a lot of formats such as zip, tar.gz, jar etc.
 
+But if you want to package artifact into uber-jar, use Shade Plugin instead.
+
+
 **What is Assembly?**<br>
 An "assembly" is a group of files, directories, and dependencies that are assembled into an archive format and distributed.
 
 The main goal in the assembly plugin is the single goal. It is used to create all assemblies.
 
+descriptor file specifies what to assembly and the assembly format.
+
 see [example](https://stackoverflow.com/questions/2514429/creating-a-zip-archive-of-the-maven-target-directory)
-on how to create zip
+on how to create zip.
+
+```xml
+<plugin>
+	<artifactId>maven-assembly-plugin</artifactId>
+	<version>3.1.0</version>
+	<executions>
+		<execution>
+			<id>make-assembly</id>
+			<phase>package</phase>
+			<goals>
+				<goal>single</goal>
+			</goals>
+		</execution>
+	</executions>
+	<configuration>
+		<descriptors>
+			<descriptor>src/main/assembly/dist.xml</descriptor>
+		</descriptors>
+	</configuration>
+</plugin>
+```
+
+descriptor src/main/assembly/dist.xml. The resulting file will be ${project.artifactId}-${project.version}-{assembly-id}.zip
+```xml
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>assembly-id</id>
+  <baseDirectory>/</baseDirectory>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources/my-resources</directory>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>
+```
+
+## Shade Plugin
+[Shade Plugin Homepage](https://maven.apache.org/plugins/maven-shade-plugin/)
+
+This plugin provides the capability to package the artifact in an uber-jar, including its dependencies and to shade - i.e. rename - the packages of some of the dependencies.
+
+The only goal is shade:shade. It is bound to the package phase.
+
+An uber-jar contains everything! The benefit is no need to worry about the dependencies since everything is within the jar.
+
+```xml
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-shade-plugin</artifactId>
+	<version>3.2.0</version>
+	<executions>
+		<execution>
+			<phase>package</phase>
+			<goals>
+				<goal>shade</goal>
+			</goals>
+			<configuration>
+				<artifactSet>
+					<excludes>
+						<exclude>classworlds:classworlds</exclude>
+						<exclude>junit:junit</exclude>
+						<exclude>log4j:log4j:jar:</exclude>
+					</excludes>
+				</artifactSet>
+			</configuration>
+		</execution>
+	</executions>
+</plugin>
+```
+
+you can create an executable uber-jar by setting its main class
+```xml
+<configuration>
+	<artifactSet>
+		<excludes>
+			<exclude>classworlds:classworlds</exclude>
+			<exclude>junit:junit</exclude>
+			<exclude>log4j:log4j:jar:</exclude>
+		</excludes>
+	</artifactSet>
+	<transformers>
+		<transformer
+			implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+			<mainClass>com.xyz.SomeMainClass</mainClass>
+		</transformer>
+	</transformers>
+</configuration>
+```
+
 
 
 # Nexus
