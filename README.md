@@ -8,7 +8,7 @@
         - [Maven Settings Properties](#maven-settings-properties)
         - [Environment Variable Properties](#environment-variable-properties)
 - [Useful Commands](#useful-commands)
-- [Core Maven Plugins](#core-maven-plugins)
+- [Maven Plugins](#maven-plugins)
     - [Clean Plugin](#clean-plugin)
     - [Resources Plugin](#resources-plugin)
     - [Compiler Plugin](#compiler-plugin)
@@ -18,14 +18,18 @@
     - [Maven Jar Plugin](#maven-jar-plugin)
     - [Assembly Plugin](#assembly-plugin)
     - [Shade Plugin](#shade-plugin)
+    - [Maven Javadoc Plugin](#maven-javadoc-plugin)
+- [More Project Information](#more-project-information)
+- [Profile](#profile)
 - [Nexus](#nexus)
+- [Reference](#reference)
 - [Useful links](#useful-links)
 
 <!-- /TOC -->
 
 # Maven Core Concept
 
-Maven is a project management tool base on Project Object Model(POM)
+Maven is a project management tool base on Project Object Model(POM). 
 
 
 ## LifeCycle and Phrase
@@ -75,7 +79,7 @@ complete list see [Default Lifecycle Reference](https://maven.apache.org/guides/
 * install                    -->    install:install                              
 * deploy                     -->    deploy:deploy                                
 
-
+Complete list is [Built-in Lifecycle Bindings](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)
 
 ## Plugin and Goal
 A Build Phase is Made Up of Plugin Goals. A plugin goal represents a specific task. A build phase without any goals will not be executed. 
@@ -166,7 +170,7 @@ mvn dependency:resolve -Dclassifier=javadoc
 ```
 
 
-# Core Maven Plugins
+# Maven Plugins
 ## Clean Plugin
 [Clean plugin Homepage](https://maven.apache.org/plugins/maven-clean-plugin/)
 
@@ -230,15 +234,38 @@ Same for target/test-classes.
 ```
 
 **filtering**<br>
-if filtering is set to true, variables defined in ${...} format will be replace with property value. 
+filtering is set to be false by default. if filtering is set to true, variables defined in ${...} format will be replace with property value. 
 see [documentation](https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html)
 ```xml
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/**</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 ```
 
+You can organize the variables and values in a separate properties file. then specify the file in filters element
+```xml
+   <filters>
+      <filter>[a filter property]</filter>
+    </filters>
+```
+This post uses filters: [mkyong profile](http://www.mkyong.com/maven/maven-profiles-example/)
+
+
+**copy-resources goal**<br>
 You can use resources plugin's copy-resources goal to move resource to an arbitrary directory
 ```xml
 <plugin>
@@ -445,7 +472,90 @@ you can create an executable uber-jar by setting its main class
 </configuration>
 ```
 
+## Maven Javadoc Plugin
+[Maven Javadoc Plugin Homepage](https://maven.apache.org/plugins/maven-javadoc-plugin/)
 
+```xml
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<version>3.0.0</version>
+</plugin>
+```
+use `mvn javadoc:javadoc` command to generate javadoc. content is generated under target/site/apidocs
+
+
+
+# More Project Information
+You can add more project information to pom.xml
+* Licenses
+* Organization
+* Developers
+* Contributors
+
+For complete guide, see [https://maven.apache.org/pom.html#More_Project_Information](https://maven.apache.org/pom.html#More_Project_Information).
+
+Example
+```xml
+<developers>
+    <developer>
+      <id>jdoe</id>
+      <name>John Doe</name>
+      <email>jdoe@example.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+  </developers>
+```
+
+# Profile
+A Maven profile is a sub-set of POM declarations that you can activate or disactivate according to some condition. 
+It enable portability between different build environments.
+
+Profiles can be actived by JDK versions, OS parameters, files and properties.
+
+Profiles can be explicitly specified using the -P CLI option.
+```
+mvn groupId:artifactId:goal -P profile-1,profile-2
+```
+
+profile Example
+```xml
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <env>dev</env>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>prod</id>
+            <properties>
+                <env>prod</env>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>test</id>
+            <properties>
+                <env>test</env>
+            </properties>
+        </profile>
+    </profiles>
+```
+
+to activate prod profile
+```
+mvn package -Pprod
+```
+
+More detailed example in [MKyong Maven Profiles example](http://www.mkyong.com/maven/maven-profiles-example/)
 
 # Nexus
 Repository Manager is The warehouse for software parts.
@@ -546,13 +656,19 @@ Reference
 * [Docker  repository for nexus3](https://hub.docker.com/r/sonatype/nexus3/)
 * [Sonatype Learning - for basics and first time setup](https://help.sonatype.com/learning/repository-manager-3)
 
-# Useful links
+
+# Reference
 * [Apache Maven Home](https://maven.apache.org/index.html)
-* [Book Maven: The Complete Reference](https://books.sonatype.com/mvnref-book/reference/index.html)
+* [POM File Reference](https://maven.apache.org/pom.html)
+* [Sonatype Book Maven: The Complete Reference](https://books.sonatype.com/mvnref-book/reference/index.html)
 * [Apache Maven Guide](https://maven.apache.org/guides/getting-started/index.html)
     * [Intro to Build Lifecycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
     * [Config plugin](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
     * [Built-in Lifecycle Bindings](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)
+
+
+# Useful links
+* [CodeTab Maven tutorial](http://www.codetab.org/apache-maven-tutorial/)
 * [Mkyong Maven Tutorial](http://www.mkyong.com/tutorials/maven-tutorials/)
 * [Tutorialspoint Maven Tutorial](http://www.tutorialspoint.com/maven/)
 * [Maven by Example](https://books.sonatype.com/mvnex-book/reference/index.html)
