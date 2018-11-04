@@ -136,6 +136,13 @@ For Example **mvn install** will execute all phases in defaul lifecycle except d
 You can not execute a lifecycle directly, you can only execute a phase or a plugin. So when you execute command **mvn clean**, 
 the pre-client and clean phase are actually called, not the lifecycle.
 
+format
+```
+mvn [plugin-name]:[goal-name]
+```
+add -X option to show debug info.
+
+
 **compile, test, package or install project**<br>
 ```sh
 mvn clean compile
@@ -152,6 +159,21 @@ mvn clean install
 
 # to print debug info, add -X flag
 mvn clean test -X
+
+# create eclipse project
+mvn eclipse:eclipse
+
+# remove eclipse configuration
+mvn eclipse:clean
+
+# create idea project
+mvn idea:idea
+
+# show dependency tree
+mvn dependency:tree
+
+# show dependency list
+mvn dependency:list
 ```
 
 
