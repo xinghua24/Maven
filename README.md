@@ -1,24 +1,26 @@
 <!-- TOC -->
 
 - [Maven Core Concept](#maven-core-concept)
-    - [LifeCycle and Phrase](#lifecycle-and-phrase)
-    - [Plugin and Goal](#plugin-and-goal)
-    - [Properties](#properties)
-        - [Maven Project Properties](#maven-project-properties)
-        - [Maven Settings Properties](#maven-settings-properties)
-        - [Environment Variable Properties](#environment-variable-properties)
+	- [Standard Dicrectory Layout](#standard-dicrectory-layout)
+	- [Dependency](#dependency)
+	- [LifeCycle and Phrase](#lifecycle-and-phrase)
+	- [Plugin and Goal](#plugin-and-goal)
+	- [Properties](#properties)
+		- [Maven Project Properties](#maven-project-properties)
+		- [Maven Settings Properties](#maven-settings-properties)
+		- [Environment Variable Properties](#environment-variable-properties)
 - [Useful Commands](#useful-commands)
 - [Maven Plugins](#maven-plugins)
-    - [Clean Plugin](#clean-plugin)
-    - [Resources Plugin](#resources-plugin)
-    - [Compiler Plugin](#compiler-plugin)
-    - [Surefire Plugin](#surefire-plugin)
-    - [Deploy Plugin](#deploy-plugin)
-    - [Maven Dependency Plugin](#maven-dependency-plugin)
-    - [Maven Jar Plugin](#maven-jar-plugin)
-    - [Assembly Plugin](#assembly-plugin)
-    - [Shade Plugin](#shade-plugin)
-    - [Maven Javadoc Plugin](#maven-javadoc-plugin)
+	- [Clean Plugin](#clean-plugin)
+	- [Resources Plugin](#resources-plugin)
+	- [Compiler Plugin](#compiler-plugin)
+	- [Surefire Plugin](#surefire-plugin)
+	- [Deploy Plugin](#deploy-plugin)
+	- [Maven Dependency Plugin](#maven-dependency-plugin)
+	- [Maven Jar Plugin](#maven-jar-plugin)
+	- [Assembly Plugin](#assembly-plugin)
+	- [Shade Plugin](#shade-plugin)
+	- [Maven Javadoc Plugin](#maven-javadoc-plugin)
 - [More Project Information](#more-project-information)
 - [Profile](#profile)
 - [Nexus](#nexus)
@@ -31,6 +33,23 @@
 
 Maven is a project management tool base on Project Object Model(POM). 
 
+## Standard Dicrectory Layout
+This is the directory layout expected by Maven. Try to confirm with this layout. see [Introduction to the Standard Directory Layout](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)
+* src/main/java	Application/Library sources
+* src/main/resources	Application/Library resources
+* src/test/java	Test sources
+* src/test/resources	Test resources
+* src/assembly	Assembly descriptors
+
+##  Dependency
+
+There are 6 scopes
+* compile - this is the default.
+* provided - expect the JDK or a container to provide the dependency at runtime
+* runtime - dependency is not required at compilation
+* test
+* system
+* import
 
 ## LifeCycle and Phrase
 [Intro to LifeCycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
@@ -39,6 +58,9 @@ There are three build-in build lifecycles
 * default lifecycle - build and deploy project
 * clean lifecycle - clean up the directory where the the build files are located(usually target folder)
 * site lifecycle - create the site
+
+![Lifecycle](Maven_LifeCycle_Table.png)
+
 
 A **lifecycle** is make up of **phrases**.
 A Build **Phase** is Made Up of Plugin **Goals**.
@@ -140,7 +162,9 @@ format
 ```
 mvn [plugin-name]:[goal-name]
 ```
-add -X option to show debug info.
+execute mvn --help to display help info.<br>
+add -X or --debug option to show debug info.<br>
+add -U or --update-snapshots to force a check for missing releases and updated snapshots on remote repo<br>
 
 
 **compile, test, package or install project**<br>
