@@ -596,8 +596,9 @@ profile Example
     </profiles>
 ```
 
-to activate prod profile
+to activate a profile
 ```
+mvn package -Pdev
 mvn package -Pprod
 ```
 
