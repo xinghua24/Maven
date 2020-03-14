@@ -19,8 +19,8 @@
 	- [Maven Dependency Plugin](#maven-dependency-plugin)
 	- [Maven Jar Plugin](#maven-jar-plugin)
 	- [Assembly Plugin](#assembly-plugin)
-	- [Shade Plugin](#shade-plugin)
 	- [Maven Javadoc Plugin](#maven-javadoc-plugin)
+	- [Shade Plugin](#shade-plugin)
 - [More Project Information](#more-project-information)
 - [Profile](#profile)
 - [Nexus](#nexus)
@@ -407,6 +407,43 @@ goals
 * jar:jar create a jar file for your project classes inclusive resources.
 * jar:test-jar create a jar file for your project test classes .
 
+You can run the jar using `java -jar app.jar` command. However, if the jar is not executable, You will get *no main manifest attribute error* error.
+
+to make a jar executable... you need to jar a file called META-INF/MANIFEST.MF
+
+the file itself should have (at least) this one liner:
+```
+Main-Class: com.mypackage.MyClass
+```
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <!-- Build an executable JAR -->
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <version>3.1.0</version>
+      <configuration>
+        <archive>
+          <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>com.mypackage.MyClass</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+see [Can't execute jar- file: “no main manifest attribute”](https://stackoverflow.com/questions/9689793/cant-execute-jar-file-no-main-manifest-attribute)
+
+
+<b>The jar created by Maven Jar plugin is not a fat jar so it doesn't have dependencies.</b> You may get *java.lang.NoClassDefFoundError* when you execute the jar file. Use Shade plugin to create fat jar.
+
+
 
 ## Assembly Plugin
 [Maven Assembly Plugin Homepage](https://maven.apache.org/plugins/maven-assembly-plugin/)
@@ -465,15 +502,30 @@ descriptor src/main/assembly/dist.xml. The resulting file will be ${project.arti
 </assembly>
 ```
 
+
+## Maven Javadoc Plugin
+[Maven Javadoc Plugin Homepage](https://maven.apache.org/plugins/maven-javadoc-plugin/)
+
+```xml
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<version>3.0.0</version>
+</plugin>
+```
+use `mvn javadoc:javadoc` command to generate javadoc. content is generated under target/site/apidocs
+
+
 ## Shade Plugin
 [Shade Plugin Homepage](https://maven.apache.org/plugins/maven-shade-plugin/)
 
-This plugin provides the capability to package the artifact in an uber-jar, including its dependencies and to shade - i.e. rename - the packages of some of the dependencies.
+This plugin provides the capability to package the artifact in an uber jar(fat jar), including its dependencies and to shade - i.e. rename - the packages of some of the dependencies.
 
 The only goal is shade:shade. It is bound to the package phase.
 
 An uber-jar contains everything! The benefit is no need to worry about the dependencies since everything is within the jar.
 
+you can create an executable uber-jar by setting its main class
 ```xml
 <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -493,42 +545,17 @@ An uber-jar contains everything! The benefit is no need to worry about the depen
 						<exclude>log4j:log4j:jar:</exclude>
 					</excludes>
 				</artifactSet>
+				<transformers>
+					<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+						<mainClass>com.example.App</mainClass>
+					</transformer>
+				</transformers>
 			</configuration>
 		</execution>
 	</executions>
 </plugin>
 ```
-
-you can create an executable uber-jar by setting its main class
-```xml
-<configuration>
-	<artifactSet>
-		<excludes>
-			<exclude>classworlds:classworlds</exclude>
-			<exclude>junit:junit</exclude>
-			<exclude>log4j:log4j:jar:</exclude>
-		</excludes>
-	</artifactSet>
-	<transformers>
-		<transformer
-			implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-			<mainClass>com.xyz.SomeMainClass</mainClass>
-		</transformer>
-	</transformers>
-</configuration>
-```
-
-## Maven Javadoc Plugin
-[Maven Javadoc Plugin Homepage](https://maven.apache.org/plugins/maven-javadoc-plugin/)
-
-```xml
-<plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>3.0.0</version>
-</plugin>
-```
-use `mvn javadoc:javadoc` command to generate javadoc. content is generated under target/site/apidocs
 
 
 
