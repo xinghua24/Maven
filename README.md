@@ -139,15 +139,15 @@ see suport POM for the list of pre-defined properties. [pom](https://github.com/
 
 
 ### Timestamp
-${maven.build.timestamp} is a special variable. It is the timestamp that denotes the start of the build (UTC). Since Maven 2.1.0-M1. FThe f
+${maven.build.timestamp} is a special variable. It is the timestamp that denotes the start of the build (UTC). Since Maven 2.1.0-M1.
 
 Set the maven build timestamp with format
 ```xml
-	<properties>
-		<java.version>1.8</java.version>
-		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-	</properties>
+<properties>
+	<java.version>1.8</java.version>
+	<timestamp>${maven.build.timestamp}</timestamp>
+	<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+</properties>
 ```
 
 Timestamp can now be access using 
