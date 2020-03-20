@@ -597,7 +597,14 @@ You can format the source files during the build. include the `format` goal in t
 ```
 The source files will be formatted prior to compilation in the build lifecycle.
 
+By default, the plugin uses the Eclipse formatter settings and provides no additional preferences other than the compiler version. You can specify the formatting preferences for Eclipse code formatter, sing the `configFile` parameter.
 
+Here is an example to use Google's formatter [eclipse-java-google-style.xml](https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml) 
+```xml
+<configuration>
+	<configFile>${project.basedir}/src/main/resources/eclipse-java-google-style.xml</configFile>
+</configuration>
+```
 
 # More Project Information
 You can add more project information to pom.xml
