@@ -7,6 +7,7 @@
 	- [Plugin and Goal](#plugin-and-goal)
 	- [Properties](#properties)
 		- [Maven Project Properties](#maven-project-properties)
+		- [Timestamp](#timestamp)
 		- [Maven Settings Properties](#maven-settings-properties)
 		- [Environment Variable Properties](#environment-variable-properties)
 - [Useful Commands](#useful-commands)
@@ -131,10 +132,32 @@ Maven project has implicit properties, you can also have user-defined properties
 use project.* to reference values in a Maven Pom. e.g ${project.groupId}, ${project.version}, ${project.build.sourceDirectory}
 
 * ${project.basedir} - The directory that the current project resides in
-* ${project.build.sourceDirectory} - ${project.basedir}/src/main/java
-* ${project.build.directory} - ${project.basedir}/target
+* ${project.build.sourceDirectory} - source directory is defined as ${project.basedir}/src/main/java
+* ${project.build.directory} - directory is defined as ${project.basedir}/target
 
 see suport POM for the list of pre-defined properties. [pom](https://github.com/apache/maven/blob/trunk/maven-model-builder/src/main/resources/org/apache/maven/model/pom-4.0.0.xml#L53)
+
+
+### Timestamp
+${maven.build.timestamp} is a special variable. It is the timestamp that denotes the start of the build (UTC). Since Maven 2.1.0-M1. FThe f
+
+Set the maven build timestamp with format
+```xml
+	<properties>
+		<java.version>1.8</java.version>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+	</properties>
+```
+
+Timestamp can now be access using 
+```
+${timestamp}
+```
+
+The format pattern has to comply with the rules given in the API documentation for [SimpleDateFormat](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+
+see [Special Variables](http://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Available_Variables)
 
 ### Maven Settings Properties
 You can also reference any properties in the Maven Local Settings file which is usually stored in ~/.m2/settings.xml. prefix is settings.*
