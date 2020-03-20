@@ -21,6 +21,7 @@
 	- [Assembly Plugin](#assembly-plugin)
 	- [Maven Javadoc Plugin](#maven-javadoc-plugin)
 	- [Shade Plugin](#shade-plugin)
+	- [Formatter maven plugin](#formatter-maven-plugin)
 - [More Project Information](#more-project-information)
 - [Profile](#profile)
 - [Nexus](#nexus)
@@ -77,7 +78,7 @@ A Build **Phase** is Made Up of Plugin **Goals**.
 * install - install the package into the local repository, for use as a dependency in other projects locally
 * deploy - done in the build environment, copies the final package to the remote repository for sharing with other developers and projects.
 
-complete list see [Default Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference)
+The complete [Lifecycle Reference](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Lifecycle_Reference)
 
 **clean lifecycle's phase**<br>
 * pre-clean
@@ -556,6 +557,45 @@ you can create an executable uber-jar by setting its main class
 	</executions>
 </plugin>
 ```
+
+## Formatter maven plugin
+Maven plugin for formatting source code.
+
+Homepage: https://code.revelc.net/formatter-maven-plugin/index.html
+
+To include formatter maven plugin
+```xml
+    <plugins>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>2.11.0</version>
+      </plugin>
+    </plugins>
+```
+You can run the plugin with the `format` goal.
+```
+mvn formatter:format
+```
+
+You can format the source files during the build. include the `format` goal in the plugin executions.
+```xml
+    <plugins>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>2.11.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+```
+The source files will be formatted prior to compilation in the build lifecycle.
 
 
 
