@@ -620,7 +620,7 @@ You can format the source files during the build. include the `format` goal in t
 ```
 The source files will be formatted prior to compilation in the build lifecycle.
 
-By default, the plugin uses the Eclipse formatter settings and provides no additional preferences other than the compiler version. You can specify the formatting preferences for Eclipse code formatter, sing the `configFile` parameter.
+By default, the plugin uses the Eclipse formatter settings and provides no additional preferences other than the compiler version. You can specify the formatting preferences for Eclipse code formatter, using the `configFile` parameter.
 
 Here is an example to use Google's formatter [eclipse-java-google-style.xml](https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml) 
 ```xml
@@ -806,9 +806,9 @@ Reference
 * [POM File Reference](https://maven.apache.org/pom.html)
 * [Sonatype Book Maven: The Complete Reference](https://books.sonatype.com/mvnref-book/reference/index.html)
 * [Apache Maven Guide](https://maven.apache.org/guides/getting-started/index.html)
-    * [Intro to Build Lifecycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
-    * [Config plugin](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
-    * [Built-in Lifecycle Bindings](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)
+* [Intro to Build Lifecycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
+* [Config plugin](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
+* [Built-in Lifecycle Bindings](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)
 
 
 # Useful links
