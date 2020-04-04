@@ -1,10 +1,13 @@
 <!-- TOC -->
 
 - [Maven Core Concept](#maven-core-concept)
+	- [Installation](#installation)
+	- [To Increase runtime heap size](#to-increase-runtime-heap-size)
 	- [Standard Dicrectory Layout](#standard-dicrectory-layout)
-	- [Dependency](#dependency)
 	- [LifeCycle and Phrase](#lifecycle-and-phrase)
+	- [Goal](#goal)
 	- [Plugin and Goal](#plugin-and-goal)
+	- [Dependency](#dependency)
 	- [Properties](#properties)
 		- [Maven Project Properties](#maven-project-properties)
 		- [Timestamp](#timestamp)
@@ -12,17 +15,23 @@
 		- [Environment Variable Properties](#environment-variable-properties)
 - [Useful Commands](#useful-commands)
 - [Maven Plugins](#maven-plugins)
-	- [Clean Plugin](#clean-plugin)
 	- [Resources Plugin](#resources-plugin)
 	- [Compiler Plugin](#compiler-plugin)
 	- [Surefire Plugin](#surefire-plugin)
-	- [Deploy Plugin](#deploy-plugin)
-	- [Maven Dependency Plugin](#maven-dependency-plugin)
+		- [Parallel Test](#parallel-test)
 	- [Maven Jar Plugin](#maven-jar-plugin)
+	- [Install Plugin](#install-plugin)
+	- [Deploy Plugin](#deploy-plugin)
+	- [Clean Plugin](#clean-plugin)
+- [Additional Plugins](#additional-plugins)
+	- [Maven Failsafe Plugin](#maven-failsafe-plugin)
+	- [Maven Dependency Plugin](#maven-dependency-plugin)
 	- [Assembly Plugin](#assembly-plugin)
 	- [Maven Javadoc Plugin](#maven-javadoc-plugin)
 	- [Shade Plugin](#shade-plugin)
 	- [Formatter maven plugin](#formatter-maven-plugin)
+	- [JaCoCo Plugin for Code Coverage](#jacoco-plugin-for-code-coverage)
+	- [Maven Enforcer Plugin](#maven-enforcer-plugin)
 - [More Project Information](#more-project-information)
 - [Profile](#profile)
 - [Nexus](#nexus)
@@ -32,8 +41,34 @@
 <!-- /TOC -->
 
 # Maven Core Concept
-
 Maven is a project management tool base on Project Object Model(POM). 
+
+## Installation
+see [Installing Apache Maven](http://maven.apache.org/install.html) for instruction.
+
+M3_HOME and MAVEN_HOME environment variable should point to maven installation path. bin folder should be added to PATH environment variable.
+
+Sample .bashrc command
+```
+export M3_HOME=/opt/apache-maven
+export MAVEN_HOME=/opt/apache-maven
+export PATH=${MAVEN_HOME}/bin:${PATH}
+```
+
+use `mvn --version` to check maven installation
+
+
+## To Increase runtime heap size
+**MAVEN_OPTS** environment variable contains parameters used to start up the JVM. so to increase heap size, add `-Xmx2048` to environment variable
+
+```
+export MAVEN_OPTS="-Xms256m -Xmx2048m"
+```
+
+For windows
+```
+set MAVEN_OPTS=-Xms256m -Xmx2048m
+```
 
 ## Standard Dicrectory Layout
 This is the directory layout expected by Maven. Try to confirm with this layout. see [Introduction to the Standard Directory Layout](https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html)
@@ -43,31 +78,25 @@ This is the directory layout expected by Maven. Try to confirm with this layout.
 * src/test/resources	Test resources
 * src/assembly	Assembly descriptors
 
-##  Dependency
-
-There are 6 scopes
-* compile - this is the default.
-* provided - expect the JDK or a container to provide the dependency at runtime
-* runtime - dependency is not required at compilation
-* test
-* system
-* import
 
 ## LifeCycle and Phrase
-[Intro to LifeCycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
+**Each life cycle consists of a sequence of phases.** The default build life cycle consists of 23 phases as it's the main build lifecycle.
 
 There are three build-in build lifecycles
 * default lifecycle - build and deploy project
 * clean lifecycle - clean up the directory where the the build files are located(usually target folder)
 * site lifecycle - create the site
 
+
 ![Lifecycle](Maven_LifeCycle_Table.png)
 
+Reference
+* [Intro to LifeCycle](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
 
 A **lifecycle** is make up of **phrases**.
 A Build **Phase** is Made Up of Plugin **Goals**.
 
-**default lifecycle's phases**<br>
+**Common Default lifecycle's phases**<br>
 * validate - validate the project is correct and all necessary information is available
 * process-sources - process the source code
 * compile - compile the source code of the project
@@ -105,9 +134,34 @@ The complete [Lifecycle Reference](https://maven.apache.org/guides/introduction/
 
 Complete list is [Built-in Lifecycle Bindings](https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html#Built-in_Lifecycle_Bindings)
 
-## Plugin and Goal
-A Build Phase is Made Up of Plugin Goals. A plugin goal represents a specific task. A build phase without any goals will not be executed. 
+## Goal
+**Each phase is a sequence of goals, and each goal is responsible for a specific task.**
+**When we run a phase - all goals bound to this phase are executed in order.** 
 
+Here are some of the phases and default goals bound to them:
+* *compiler:compile* – the compile goal from the compiler plugin is bound to the compile phase
+* *compiler:testCompile* is bound to the test-compile phase
+* *surefire:test* is bound to test phase
+* *install:install* is bound to install phase
+* *jar:jar* and war:war is bound to package phase
+
+To list all goals bound to a phase
+```
+mvn help:describe -Dcmd=PHASENAME
+```
+
+Example
+```
+mvn help:describe -Dcmd=compile
+```
+
+Output
+```
+[INFO] 'compile' is a phase corresponding to this plugin:
+org.apache.maven.plugins:maven-compiler-plugin:3.1:compile
+```
+
+## Plugin and Goal
 A plugin contains Goals. Plugins are make up of mojos(Maven plain Old Java Object). Each mojo is an executable goal in Maven
 
 to execute a goal, run command **mvn** follow by pluginName:goalName.
@@ -118,6 +172,17 @@ Maven provides some standard plugins, when using the standard plugins, you don't
 see [Maven Supported Plugins](http://maven.apache.org/plugins/index.html)
 
 to configure a plugin see [Guide to Configuring Plug-ins](https://maven.apache.org/guides/mini/guide-configuring-plugins.html)
+
+
+## Dependency
+
+There are 6 scopes
+* compile - this is the default.
+* provided - expect the JDK or a container to provide the dependency at runtime
+* runtime - dependency is not required at compilation
+* test
+* system
+* import
 
 
 ## Properties
@@ -241,27 +306,6 @@ mvn dependency:resolve -Dclassifier=javadoc
 
 
 # Maven Plugins
-## Clean Plugin
-[Clean plugin Homepage](https://maven.apache.org/plugins/maven-clean-plugin/)
-
-The Maven Clean Plugin will delete the target directory by default. 
-
-you can also delete additional directories
-```xml
-<plugin>
-	<artifactId>maven-clean-plugin</artifactId>
-	<version>3.0.0</version>
-	<configuration>
-		<filesets>
-			<fileset>
-				<directory>${basedir}/output-resources</directory>
-			</fileset>
-		</filesets>
-	</configuration>
-</plugin>
-```
-
-
 ## Resources Plugin
 [Resources plugin Homepage](https://maven.apache.org/plugins/maven-resources-plugin/)
 
@@ -394,7 +438,13 @@ if you want the compiler to use java 8 feature and compile to JVM 1.8, set the s
 
 
 ## Surefire Plugin
-[Maven Surefire Plugin Homepage](https://maven.apache.org/surefire/maven-surefire-plugin/)
+* [Maven Surefire Plugin Homepage](https://maven.apache.org/surefire/maven-surefire-plugin/)
+* [Quick Guide to the Maven Surefire Plugin by Nguyen Nam Thai](https://www.baeldung.com/maven-surefire-plugin)
+
+Two Goals available
+* surefire:help - display help information
+* surefire:test - Run tests using Surefire
+
 
 Test phrase binds to surefire plugin's `test` goal. It generates reports in two different file formats:
 
@@ -404,22 +454,66 @@ Plain text files (*.txt)
 
 By default, these files are generated in ${basedir}/target/surefire-reports/TEST-*.xml.
 
+The surefire plugin can work with the test frameworks JUnit and TestNG. No matter which framework we use, the behavior of surefire is the same.
+
+By default, surefire automatically includes all test classes whose name starts with `Test`, or ends with `Test`, `Tests` or `TestCase`.
 
 
-## Deploy Plugin
-[Deploy Plugin Homepage](https://maven.apache.org/plugins/maven-deploy-plugin/)
+We can change this configuration using the excludes and includes parameters
+```xml
+<plugin>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>2.22.2</version>
+    <configuration>
+        <excludes>
+            <exclude>DataTest.java</exclude>
+        </excludes>
+        <includes>
+            <include>DataCheck.java</include>
+        </includes>
+    </configuration>
+</plugin>
+```
 
-The deploy plugin is primarily used during the deploy phase, to add your artifact(s) to a remote repository for sharing with other developers and projects.
+### Parallel Test
+To enable parallel behavior in surefire using parallel parameter, we need to state the level of granularity at which we would like to apply parallelism.
 
+The possible values are:
+* methods – runs test methods in separate threads
+* classes – runs test classes in separate threads
+* classesAndMethods – runs classes and methods in separate threads
+* suites – runs suites in parallel
+* suitesAndClasses – runs suites and classes in separate threads
+* suitesAndMethods – creates separate threads for classes and for methods
+* all – runs suites, classes as well as methods in separate threads
 
-Two goals
-* deploy:deploy is used to automatically install the artifact, its pom and the attached artifacts produced by a particular project. Most if not all of the information related to the deployment is stored in the project's pom.
-* deploy:deploy-file is used to install a single artifact along with its pom. In that case the artifact information can be taken from an optionally specified pomFile, but can be completed/overriden using the command line.
+Example
+```xml
+<configuration>
+    <parallel>all</parallel>
+</configuration>
+```
 
-## Maven Dependency Plugin
-[Maven Dependency Plugin Homepage](https://maven.apache.org/plugins/maven-dependency-plugin/)
+Next, it is required to set the total number of threads we want surefire to create there are two ways to do that
+```xml
+<threadCount>10</threadCount>
+```
 
-The dependency plugin provides the capability to manipulate artifacts. It can copy and/or unpack artifacts from local or remote repositories to a specified location.
+or set useUnlimitedThreads parameter to be true
+```xml	
+<useUnlimitedThreads>true</useUnlimitedThreads>
+```
+
+To enable or disable per core thread count. This is true by default
+```xml
+<perCoreThreadCount>true</perCoreThreadCount>
+```
+
+As of maven-surefire-plugin:2.16, one can impose thread-count limitations on suites, classes or methods using one or more of the parameters `threadCountSuites`, `threadCountClasses` and `threadCountMethods`.
+
+Reference: 
+* [Running JUnit Tests in Parallel with Maven by Baeldung](https://www.baeldung.com/maven-junit-parallel-tests)
+
 
 
 ## Maven Jar Plugin
@@ -467,6 +561,78 @@ see [Can't execute jar- file: “no main manifest attribute”](https://stackove
 
 <b>The jar created by Maven Jar plugin is not a fat jar so it doesn't have dependencies.</b> You may get *java.lang.NoClassDefFoundError* when you execute the jar file. Use Shade plugin to create fat jar.
 
+## Install Plugin
+**We use the install plugin to add artifacts to the local repository.** 
+
+The most noteworthy goal of this plugin is install. It is bound to the *install* phase by default
+
+
+## Deploy Plugin
+[Deploy Plugin Homepage](https://maven.apache.org/plugins/maven-deploy-plugin/)
+
+The deploy plugin is primarily used during the deploy phase, to add your artifact(s) to a remote repository for sharing with other developers and projects.
+
+
+Two goals
+* deploy:deploy is used to automatically install the artifact, its pom and the attached artifacts produced by a particular project. Most if not all of the information related to the deployment is stored in the project's pom.
+* deploy:deploy-file is used to install a single artifact along with its pom. In that case the artifact information can be taken from an optionally specified pomFile, but can be completed/overriden using the command line.
+
+## Clean Plugin
+[Clean plugin Homepage](https://maven.apache.org/plugins/maven-clean-plugin/)
+
+The Maven Clean Plugin will delete the target directory by default. 
+
+you can also delete additional directories
+```xml
+<plugin>
+	<artifactId>maven-clean-plugin</artifactId>
+	<version>3.0.0</version>
+	<configuration>
+		<filesets>
+			<fileset>
+				<directory>${basedir}/output-resources</directory>
+			</fileset>
+		</filesets>
+	</configuration>
+</plugin>
+```
+
+
+# Additional Plugins
+## Maven Failsafe Plugin
+The failsafe plugin is used for integration tests of a project. It has two goals:
+
+* integration-test – run integration tests; this goal is bound to the integration-test phase by default
+* verify – verify that the integration tests passed; this goal is bound to the verify phase by default
+
+```xml
+<plugin>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>3.0.0-M4</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+            </goals>
+            <configuration>
+                ...
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+**A test failure in the integration-test phase doesn't fail the build straight away, allowing the phase post-integration-test to execute**, where clean-up operations are performed.
+
+Reference
+* [The Maven Failsafe Plugin by Nguyen Nam Thai](https://www.baeldung.com/maven-failsafe-plugin)
+
+
+## Maven Dependency Plugin
+[Maven Dependency Plugin Homepage](https://maven.apache.org/plugins/maven-dependency-plugin/)
+
+The dependency plugin provides the capability to manipulate artifacts. It can copy and/or unpack artifacts from local or remote repositories to a specified location.
 
 
 ## Assembly Plugin
@@ -525,7 +691,6 @@ descriptor src/main/assembly/dist.xml. The resulting file will be ${project.arti
   </fileSets>
 </assembly>
 ```
-
 
 ## Maven Javadoc Plugin
 [Maven Javadoc Plugin Homepage](https://maven.apache.org/plugins/maven-javadoc-plugin/)
@@ -628,6 +793,14 @@ Here is an example to use Google's formatter [eclipse-java-google-style.xml](htt
 	<configFile>${project.basedir}/src/main/resources/eclipse-java-google-style.xml</configFile>
 </configuration>
 ```
+
+## JaCoCo Plugin for Code Coverage
+see [Intro to Jacoco](https://www.baeldung.com/jacoco) for JaCoCo usage.
+
+
+## Maven Enforcer Plugin
+see [Maven Enforcer Plugin](https://www.baeldung.com/maven-enforcer-plugin) for details. Maven Endorcer enforce rules to promote project quality.
+
 
 # More Project Information
 You can add more project information to pom.xml
